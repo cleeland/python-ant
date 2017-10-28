@@ -183,11 +183,21 @@ class USB2Driver(Driver):
         self._intNum = None
 
     def _open(self):
-        # Most of this is straight from the PyUSB example documentation
-        dev = findDeviceUSB(idVendor=self.idVendor, idProduct=self.idProduct)
+        devlist = [
+            # vendorId, productId
+            [ self.idVendor, self.idProduct ], # try the init args first
+            [ 0x0fcf, 0x1008 ],
+            [ 0x0fcf, 0x1009 ]
+            ]
+        
+        # Most of this is straight from the PyUSB example documentation		
+        for d in devlist:
+            dev = findDeviceUSB(idVendor=d[0], idProduct=d[1])
+            if dev is not None:
+                break
 
         if dev is None:
-            raise DriverError("Could not open device (not found)")
+            raise DriverError('Could not find device to open (not found)')
 
         # make sure the kernel driver is not active
         if dev.is_kernel_driver_active(0):
